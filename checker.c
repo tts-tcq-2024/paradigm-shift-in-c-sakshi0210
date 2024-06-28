@@ -1,48 +1,82 @@
 #include <stdio.h>
 #include <assert.h>
 
-int isTemperatureOk(float temperature) {
-if (temperature < 0) {
-printf("Temperature too low!\n"); return 0;
-} else if (temperature > 45) {
-printf("Temperature too high!\n"); return 0;
+// Define constants for acceptable ranges
+#define MIN_TEMPERATURE 0
+#define MAX_TEMPERATURE 45
+#define MIN_SOC 20
+#define MAX_SOC 80
+#define MAX_CHARGE_RATE 0.8
+
+// Function to check if temperature is within the acceptable range
+int isTemperatureWithinRange(float temperature) {
+    return (temperature >= MIN_TEMPERATURE && temperature <= MAX_TEMPERATURE);
 }
-return 1;
+
+// Function to check if State of Charge (SOC) is within the acceptable range
+int isSocWithinRange(float soc) {
+    return (soc >= MIN_SOC && soc <= MAX_SOC);
 }
-int isSocOk(float soc) {
-if (soc < 20) {
-printf("State of Charge too low!\n"); return 0;
-} else if (soc > 80) {
-printf("State of Charge too high!\n"); return 0;
+
+// Function to check if charge rate is within the acceptable range
+int isChargeRateWithinRange(float chargeRate) {
+    return (chargeRate <= MAX_CHARGE_RATE);
 }
-return 1;
+
+// Function to print specific error messages
+void printErrorMessage(const char* parameter, const char* condition) {
+    printf("%s %s\n", parameter, condition);
 }
-int isChargeRateOk(float chargeRate) {
-if (chargeRate > 0.8) {
-printf("Charge Rate too high!\n"); return 0;
-}
-return 1;
-}
+
+// Function to check if the battery parameters are all within acceptable ranges
 int batteryIsOk(float temperature, float soc, float chargeRate) {
-int tempOk = isTemperatureOk(temperature);
-int socOk = isSocOk(soc);
-int chargeRateOk = isChargeRateOk(chargeRate);
-return tempOk && socOk && chargeRateOk;
+    if (!isTemperatureWithinRange(temperature)) {
+        printErrorMessage("Temperature", temperature < MIN_TEMPERATURE ? "too low!" : "too high!");
+        return 0;
+    }
+    if (!isSocWithinRange(soc)) {
+        printErrorMessage("State of Charge", soc < MIN_SOC ? "too low!" : "too high!");
+        return 0;
+    }
+    if (!isChargeRateWithinRange(chargeRate)) {
+        printErrorMessage("Charge Rate", "too high!");
+        return 0;
+    }
+    return 1;
 }
+
+// Function to run tests on batteryIsOk function using assertions
 void runTests() {
-assert(batteryIsOk(25, 70, 0.7));
-assert(!batteryIsOk(50, 85, 0)); // Temperature too high and SOC too high
-assert(!batteryIsOk(-1, 50, 0.5)); // Temperature too low
-assert(!batteryIsOk(25, 85, 0.5)); // SOC too high
-assert(!batteryIsOk(25, 15, 0.5)); // SOC too low
-assert(!batteryIsOk(25, 50, 0.9)); // Charge Rate too high
-assert(!batteryIsOk(0, 20, 0.8)); // Edge case: Temperature on the lower edge
-assert(batteryIsOk(0, 20, 0.8)); // Edge case: Everything on the edge but within range
-assert(!batteryIsOk(45.1, 80, 0.8)); // Temperature just above high range
-assert(batteryIsOk(45, 80, 0.8)); // Edge case: Everything on the upper edge
+    // Test with all parameters within range
+    assert(batteryIsOk(25, 70, 0.7));
+
+    // Test with temperature out of range and SOC out of range
+    assert(!batteryIsOk(50, 85, 0)); // Should fail: Temperature too high and SOC too high
+
+    // Test with temperature too low
+    assert(!batteryIsOk(-1, 50, 0.5)); // Should fail: Temperature too low
+
+    // Test with SOC too high
+    assert(!batteryIsOk(25, 85, 0.5)); // Should fail: SOC too high
+
+    // Test with SOC too low
+    assert(!batteryIsOk(25, 15, 0.5)); // Should fail: SOC too low
+
+    // Test with charge rate too high
+    assert(!batteryIsOk(25, 50, 0.9)); // Should fail: Charge Rate too high
+
+    // Edge case: Test with parameters on the lower edge
+    assert(batteryIsOk(0, 20, 0.79)); // Should pass: All parameters on the lower edge
+
+    // Edge case: Test with temperature just above high range
+    assert(!batteryIsOk(45.1, 80, 0.8)); // Should fail: Temperature just above high range
+
+    // Edge case: Test with parameters just within the valid range
+    assert(batteryIsOk(0, 20, 0.79)); // Should pass: All parameters on the lower edge
 }
+
 int main() {
-runTests();
-printf("All tests passed!\n");
-return 0;
+    runTests(); // Run all test cases
+    printf("All tests passed!\n"); // Print message if all tests pass
+    return 0; // Return success status
 }
