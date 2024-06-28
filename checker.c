@@ -22,15 +22,27 @@ int isChargeRateWithinRange(float chargeRate) {
     return (chargeRate <= MAX_CHARGE_RATE);
 }
 
-// Function to print the specific error message based on the failed condition
-void printErrorMessage(float temperature, float soc, float chargeRate) {
-    if (!isTemperatureWithinRange(temperature)) {
-        printf("Temperature %s!\n", temperature < MIN_TEMPERATURE ? "too low" : "too high");
+// Function to check the specific error condition for temperature
+void checkTemperatureError(float temperature) {
+    if (temperature < MIN_TEMPERATURE) {
+        printf("Temperature too low!\n");
+    } else if (temperature > MAX_TEMPERATURE) {
+        printf("Temperature too high!\n");
     }
-    if (!isSocWithinRange(soc)) {
-        printf("State of Charge %s!\n", soc < MIN_SOC ? "too low" : "too high");
+}
+
+// Function to check the specific error condition for SOC
+void checkSocError(float soc) {
+    if (soc < MIN_SOC) {
+        printf("State of Charge too low!\n");
+    } else if (soc > MAX_SOC) {
+        printf("State of Charge too high!\n");
     }
-    if (!isChargeRateWithinRange(chargeRate)) {
+}
+
+// Function to check the specific error condition for charge rate
+void checkChargeRateError(float chargeRate) {
+    if (chargeRate > MAX_CHARGE_RATE) {
         printf("Charge Rate too high!\n");
     }
 }
@@ -41,11 +53,17 @@ int batteryIsOk(float temperature, float soc, float chargeRate) {
     int socOk = isSocWithinRange(soc);
     int chargeRateOk = isChargeRateWithinRange(chargeRate);
 
-    if (!temperatureOk || !socOk || !chargeRateOk) {
-        printErrorMessage(temperature, soc, chargeRate);
-        return 0;
+    if (!temperatureOk) {
+        checkTemperatureError(temperature);
     }
-    return 1;
+    if (!socOk) {
+        checkSocError(soc);
+    }
+    if (!chargeRateOk) {
+        checkChargeRateError(chargeRate);
+    }
+
+    return temperatureOk && socOk && chargeRateOk;
 }
 
 // Function to run tests on batteryIsOk function using assertions
@@ -83,4 +101,5 @@ int main() {
     printf("All tests passed!\n"); // Print message if all tests pass
     return 0; // Return success status
 }
+
 
