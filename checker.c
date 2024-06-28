@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-// Define constants for acceptable ranges
 #define MIN_TEMPERATURE 0
 #define MAX_TEMPERATURE 45
 #define MIN_SOC 20
@@ -23,23 +22,27 @@ int isChargeRateWithinRange(float chargeRate) {
     return (chargeRate <= MAX_CHARGE_RATE);
 }
 
-// Function to print specific error messages
-void printErrorMessage(const char* parameter, const char* condition) {
-    printf("%s %s\n", parameter, condition);
+// Function to print the specific error message based on the failed condition
+void printErrorMessage(float temperature, float soc, float chargeRate) {
+    if (!isTemperatureWithinRange(temperature)) {
+        printf("Temperature %s!\n", temperature < MIN_TEMPERATURE ? "too low" : "too high");
+    }
+    if (!isSocWithinRange(soc)) {
+        printf("State of Charge %s!\n", soc < MIN_SOC ? "too low" : "too high");
+    }
+    if (!isChargeRateWithinRange(chargeRate)) {
+        printf("Charge Rate too high!\n");
+    }
 }
 
 // Function to check if the battery parameters are all within acceptable ranges
 int batteryIsOk(float temperature, float soc, float chargeRate) {
-    if (!isTemperatureWithinRange(temperature)) {
-        printErrorMessage("Temperature", temperature < MIN_TEMPERATURE ? "too low!" : "too high!");
-        return 0;
-    }
-    if (!isSocWithinRange(soc)) {
-        printErrorMessage("State of Charge", soc < MIN_SOC ? "too low!" : "too high!");
-        return 0;
-    }
-    if (!isChargeRateWithinRange(chargeRate)) {
-        printErrorMessage("Charge Rate", "too high!");
+    int temperatureOk = isTemperatureWithinRange(temperature);
+    int socOk = isSocWithinRange(soc);
+    int chargeRateOk = isChargeRateWithinRange(chargeRate);
+
+    if (!temperatureOk || !socOk || !chargeRateOk) {
+        printErrorMessage(temperature, soc, chargeRate);
         return 0;
     }
     return 1;
@@ -66,7 +69,7 @@ void runTests() {
     assert(!batteryIsOk(25, 50, 0.9)); // Should fail: Charge Rate too high
 
     // Edge case: Test with parameters on the lower edge
-    assert(batteryIsOk(0, 20, 0.79)); // Should pass: All parameters on the lower edge
+    assert(batteryIsOk(0, 20, 0.79)); // Should pass: Edge case, but everything within range
 
     // Edge case: Test with temperature just above high range
     assert(!batteryIsOk(45.1, 80, 0.8)); // Should fail: Temperature just above high range
@@ -80,3 +83,4 @@ int main() {
     printf("All tests passed!\n"); // Print message if all tests pass
     return 0; // Return success status
 }
+
