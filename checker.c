@@ -13,11 +13,20 @@ bool checkMeasure(const char* measureName, float measureValue, float lowerLimit,
     return status;
 }
 
+bool checkTemperature(float temperature) {
+    return checkMeasure("Temperature", temperature, 0, 45);
+}
+
+bool checkSoc(float soc) {
+    return checkMeasure("State of Charge", soc, 20, 80);
+}
+
+bool checkChargeRate(float chargeRate) {
+    return checkMeasure("Charge Rate", chargeRate, 0, 0.8f);
+}
+
 bool batteryIsOk(float temperature, float soc, float chargeRate) {
-    bool tempStatus = checkMeasure("Temperature", temperature, 0, 45);
-    bool socStatus = checkMeasure("State of Charge", soc, 20, 80);
-    bool chargeStatus = checkMeasure("Charge Rate", chargeRate, 0, 0.8f);
-    return tempStatus && socStatus && chargeStatus;
+    return checkTemperature(temperature) && checkSoc(soc) && checkChargeRate(chargeRate);
 }
 
 int main() {
